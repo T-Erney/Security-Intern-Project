@@ -1,0 +1,6 @@
+\babel@toc {english}{}
+\contentsline {section}{Abstract}{2}%
+\contentsline {section}{Expectations}{3}%
+\contentsline {section}{Set One}{3}%
+\contentsline {subsection}{First Challenge}{3}%
+\contentsline {section}{References}{4}%
