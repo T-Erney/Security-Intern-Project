@@ -22,3 +22,15 @@ char* _xor_hex(char* h1, char* h2) {
   bytes_free(bytes3);
   return hex;
 }
+
+char* _xor_repeated(char* plaintext, char* key) {
+  byte_string* k_bytes = string_to_bytes(key);
+  byte_string* p_bytes = string_to_bytes(plaintext);
+  byte_string* c_bytes = bytes_init();
+
+  for (size_t i = 0; i < p_bytes->size; i += 1) {
+    bytes_append(c_bytes, _xor(p_bytes->data[i], k_bytes->data[i % k_bytes->size]));
+  }
+
+  return bytes_to_hex(c_bytes);
+}

@@ -6,4 +6,6 @@
 unsigned char _xor (unsigned char, unsigned char);
 char* _xor_hex(char*, char*);
 
+char* _xor_repeated(char*, char*);
+
 #endif

@@ -42,12 +42,16 @@ byte_string* hex_to_bytes (char* hex) {
 
   for (int i = 0; i < (int)strlen(hex); i += 2) {
     uint8_t byte = 0;
+    /*
     byte = byte + 
       ((hex[i] >= '0' && hex[i] <= '9' ? hex[i] - '0' : 
         (hex[i] >= 'a' && hex[i] <= 'f') ? hex[i] - 'a' + 10 : 0) << 4);
     byte = byte + 
       (hex[i + 1] >= '0' && hex[i + 1] <= '9' ? hex[i + 1] - '0' : 
         (hex[i + 1] >= 'a' && hex[i + 1] <= 'f' ) ? hex[i + 1] - 'a' + 10 : 0);
+    */
+    
+    byte = (hex[i] << 4) + hex[i + 1];
     bytes_append(bytes, byte);
   }
 
@@ -98,10 +102,11 @@ byte_string* base64_to_bytes (char* base64) {
 // ---
 
 char* bytes_to_string(byte_string* bytes) {
-  char* string = malloc(sizeof(char) * bytes->size);
+  char* string = malloc(sizeof(char) * bytes->size + 1);
+  string[bytes->size] = 0;
   
   for (size_t i = 0; i < bytes->size; i += 1) {
-    string[i] = (char)bytes->data[i];
+    string[i] = bytes->data[i];
   }
 
   return string;
@@ -114,8 +119,8 @@ char* bytes_to_hex(byte_string* bytes) {
 
   for (size_t i = 0; i < bytes->size; i += 1) {
     unsigned char byte = bytes->data[i];
-    hex[hex_i++] = hex_encoding[(0xf0 & byte) >> 4];
-    hex[hex_i++] = hex_encoding[(0x0f & byte)];
+    hex[hex_i++] = hex_encoding[byte >> 4];
+    hex[hex_i++] = hex_encoding[0x0f & byte];
   }
 
   return hex;
