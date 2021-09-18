@@ -7,7 +7,7 @@ unsigned char _xor (unsigned char c1, unsigned char c2) {
 char* _xor_hex(char* h1, char* h2) {
   byte_string* bytes1 = hex_to_bytes(h1);
   byte_string* bytes2 = hex_to_bytes(h2);
-  byte_string* bytes3 = bytes_init();
+  byte_string* bytes3 = bytes_init(bytes1->size);
 
   if (bytes1->size != bytes2->size) return NULL;
 
@@ -26,11 +26,15 @@ char* _xor_hex(char* h1, char* h2) {
 char* _xor_repeated(char* plaintext, char* key) {
   byte_string* k_bytes = string_to_bytes(key);
   byte_string* p_bytes = string_to_bytes(plaintext);
-  byte_string* c_bytes = bytes_init();
+  byte_string* c_bytes = bytes_init(p_bytes->size);
 
   for (size_t i = 0; i < p_bytes->size; i += 1) {
     bytes_append(c_bytes, _xor(p_bytes->data[i], k_bytes->data[i % k_bytes->size]));
   }
 
-  return bytes_to_hex(c_bytes);
+  char* hex = bytes_to_hex(c_bytes);
+  bytes_free(k_bytes);
+  bytes_free(p_bytes);
+  bytes_free(c_bytes);
+  return hex;
 }

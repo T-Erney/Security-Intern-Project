@@ -16,10 +16,13 @@ int hamming_dist(char* s1, char* s2) {
   byte_string* s1_bytes = string_to_bytes(s1);
   byte_string* s2_bytes = string_to_bytes(s2);
 
-  if (s1_bytes->size != s2_bytes->size) return -1;
+  if (s1_bytes->size != s2_bytes->size) {
+    bytes_free(s1_bytes);
+    bytes_free(s2_bytes);
+    return -1;
+  }
 
   int h_dist = 0;
-  
   for (size_t i = 0; i < s1_bytes->size; i += 1) {
     unsigned char byte1 = s1_bytes->data[i],
                   byte2 = s2_bytes->data[i];
@@ -30,6 +33,9 @@ int hamming_dist(char* s1, char* s2) {
       }
     }
   }
+
+  bytes_free(s1_bytes);
+  bytes_free(s2_bytes);
 
   return h_dist;
 }

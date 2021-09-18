@@ -2,16 +2,21 @@
 #include <string.h>
 #include <stdio.h>
 
-byte_string* bytes_init () {
+byte_string* bytes_init (size_t size) {
   byte_string* bytes = malloc(sizeof(byte_string));
-  *bytes = (byte_string) { 
-    .size = 0, 
-    .data = NULL };
+  *bytes = (byte_string) {
+    .size = 0,
+    .capacity = size,
+    .data = malloc(sizeof(unsigned char) * size) };
   return bytes;
 }
 
 void bytes_append(byte_string* bytes, unsigned char byte) {
-  bytes->data = realloc(bytes->data, sizeof(unsigned char) * bytes->size + 1);
+  // This is a bad idea!!!
+  // bytes->data = realloc(bytes->data, sizeof(unsigned char) * bytes->size + 1);
+  if (bytes->capacity == bytes->size) {
+    bytes->data = realloc(bytes->data, sizeof(unsigned char) * bytes->capacity * 2);
+  }
   bytes->data[bytes->size] = byte;
   bytes->size += 1;
 }
@@ -23,7 +28,7 @@ void bytes_free(byte_string* bytes) {
 // ---
 
 byte_string* string_to_bytes (char* string) {
-  byte_string* bytes = bytes_init();
+  byte_string* bytes = bytes_init(strlen(string));
 
   for (int i = 0; i < (int)strlen(string); i += 1) {
     bytes_append(bytes, string[i]);
@@ -38,19 +43,10 @@ byte_string* string_to_bytes (char* string) {
 // WARN: This code, as is, does not implement any sort of error checking when
 //       running the hex string.
 byte_string* hex_to_bytes (char* hex) {
-  byte_string* bytes = bytes_init();
+  byte_string* bytes = bytes_init(strlen(hex) / 2);
 
   for (int i = 0; i < (int)strlen(hex); i += 2) {
     uint8_t byte = 0;
-    /*
-    byte = byte + 
-      ((hex[i] >= '0' && hex[i] <= '9' ? hex[i] - '0' : 
-        (hex[i] >= 'a' && hex[i] <= 'f') ? hex[i] - 'a' + 10 : 0) << 4);
-    byte = byte + 
-      (hex[i + 1] >= '0' && hex[i + 1] <= '9' ? hex[i + 1] - '0' : 
-        (hex[i + 1] >= 'a' && hex[i + 1] <= 'f' ) ? hex[i + 1] - 'a' + 10 : 0);
-    */
-    
     byte = (hex[i] << 4) + hex[i + 1];
     bytes_append(bytes, byte);
   }
@@ -66,11 +62,12 @@ byte_string* hex_to_bytes (char* hex) {
 byte_string* base64_to_bytes (char* base64) {
   int input_size  = strlen(base64);
   if (input_size % 4 != 0) return NULL;
-  byte_string* bytes = bytes_init();
-  
+
   int output_size = (input_size / 4) * 3;
   if (base64[input_size - 1] == '=') output_size -= 1;
   if (base64[input_size - 2] == '=') output_size -= 1;
+
+  byte_string* bytes = bytes_init(output_size);
 
   /* The goal here is to convert 4 chars into 3 bytes
    *
@@ -104,7 +101,7 @@ byte_string* base64_to_bytes (char* base64) {
 char* bytes_to_string(byte_string* bytes) {
   char* string = malloc(sizeof(char) * bytes->size + 1);
   string[bytes->size] = 0;
-  
+
   for (size_t i = 0; i < bytes->size; i += 1) {
     string[i] = bytes->data[i];
   }
@@ -180,16 +177,14 @@ char* bytes_to_base64(byte_string* bytes) {
 char* hex_to_base64(char* hex) {
   byte_string* bytes  = hex_to_bytes(hex);
   char* base64        = bytes_to_base64(bytes);
- 
   bytes_free(bytes);
-  
+
   return base64;
 }
 
 char* base64_to_hex(char* base64) {
   byte_string* bytes  = base64_to_bytes(base64);
   char* hex           = bytes_to_hex(bytes);
-
   bytes_free(bytes);
 
   return hex;
