@@ -116,6 +116,7 @@ int main() {
       
     }
 
+    bytes_free(bytes);
     // printf("Key %d :: Score %f :: %s\n", best_key, best_score, best_text);
     ptr = ptr->next;
 
