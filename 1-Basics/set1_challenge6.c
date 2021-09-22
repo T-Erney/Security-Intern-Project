@@ -71,6 +71,7 @@ int main() {
 
     float smallest_normalized_dist = 0x0000ffff;
     int   smallest_dist = 0;
+    int   dists[38] = { 0 };
 
     for (size_t k_size = 2; k_size <= 40; k_size += 1) {
       char* sec1 = substr(hex, 0, k_size);
@@ -79,18 +80,47 @@ int main() {
       int h_dist = hamming_dist(sec1, sec2);
       float normalized_dist = (float)h_dist / (float)k_size;
 
+      /*
       if (normalized_dist < smallest_normalized_dist) {
         smallest_dist = h_dist;
         smallest_normalized_dist = normalized_dist;
       }
+      */
+
+      dists[40 - k_size] = h_dist;
+      printf("%d ", h_dist);
 
       free(sec1);
       free(sec2);
     }
+    printf("\n");
 
+    // orginize from least to greatest
+    int smallest_dists[3] = { 0 };
+    for (size_t i = 0; i < 3; i += 1) {
+      int s = 999;
+      int s_val = 999999;
+      for (size_t j = i; j < 38; j += 1) {
+        if (s_val >= dists[j]) { s = j; s_val = dists[j]; }
+      }
+
+      int tmp = dists[i];
+      dists[i] = dists[s];
+      dists[s] = tmp;
+      smallest_dists[i] = dists[i];
+    }
+
+    printf("smallest distances            :: %d, %d, %d\n", smallest_dists[0], smallest_dists[1], smallest_dists[2]);
+
+    /*
     printf("Smallest Normalized Distance  :: %f\n", smallest_normalized_dist);
     printf("Smallest Hamming Distance     :: %d\n", smallest_dist);
+    */
 
+    for (int k = 0; k < 3; k += 1) {
+
+      smallest_dist = smallest_dists[k];
+    
     size_t chunk_count = strlen(hex) / smallest_dist;
     char** chunks = malloc(sizeof(char*) * chunk_count);
     {
@@ -114,9 +144,6 @@ int main() {
       }
     }
 
-    printf("Smallest Dist: %d\n", smallest_dist);
-    getchar();
-
     // single xor on all chunks
     char* keys = malloc(sizeof(char) * smallest_dist);
     memset(keys, 0, smallest_dist);
@@ -127,7 +154,7 @@ int main() {
         unsigned char best_key = 0;
         byte_string* bytes = hex_to_bytes(transposed_chunks[i]);
 
-        for (unsigned char key = 1; key < 256; key += 1) {
+        for (int key = 1; key < 256; key += 1) {
           char* text = NULL;
           text = malloc(sizeof(char) * bytes->size);
           text[bytes->size] = 0;
@@ -136,14 +163,18 @@ int main() {
             text[i] = xor;
           }
 
-          printf("\ttext: %s\n", text);
-
           float score = 0.0;
           for (size_t i = 0; i < bytes->size; i += 1) {
             int j = 0;
-            for (; j < 27; j += 1) if (text[i] == letter_freq_order[j]) break;
+            int other = 1;
+            for (; j < 27; j += 1) {
+              if (text[i] == letter_freq_order[j]) {
+                other = 0;
+                break;
+              }
+            }
 
-            score += letter_freq_value[j];
+            score += (other) ? 0.50 : letter_freq_value[j];
           }
 
           if (score > best_score) {
@@ -156,8 +187,6 @@ int main() {
           }
         }
 
-        printf("\tBest Key: %c\n", best_key);
-
         keys[i] = best_key;
         bytes_free(bytes);
         free(best_text);
@@ -166,15 +195,32 @@ int main() {
 
     printf("Keys:\n\t[ ");
     for (size_t i = 0; i < smallest_dist; i += 1) {
-      printf("%c ", keys[i]);
+      printf("%d ", keys[i]);
     }
     printf("]\n");
+
+    char* output = NULL;
+    {
+      byte_string* h_bytes = hex_to_bytes(hex);
+      byte_string* k_bytes = string_to_bytes(keys);
+      byte_string* o_bytes = bytes_init(h_bytes->size);
+
+      for (size_t i = 0; i < h_bytes->size; i += 1) {
+        bytes_append(o_bytes, _xor(h_bytes->data[i], k_bytes->data[i % k_bytes->size]));
+      }
+
+      output = bytes_to_string(o_bytes);
+    }
+
+    printf("\n%s\n", output);
 
     // cleanup
     for (size_t i = 0; i < chunk_count; i += 1) free(chunks[i]);
     for (size_t i = 0; i < smallest_dist; i += 1) free(transposed_chunks[i]);
     free(chunks);
     free(transposed_chunks);
+  }
+
     free(buffer);
   }
 

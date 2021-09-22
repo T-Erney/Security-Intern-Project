@@ -1,6 +1,8 @@
 #ifndef HAMMING_DIST
 #define HAMMING_DIST
 
-int hamming_dist(char*, char*);
+#include "conversions.h"
+
+int hamming_dist(byte_string*, byte_string*);
 
 #endif

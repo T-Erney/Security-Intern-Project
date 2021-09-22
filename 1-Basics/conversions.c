@@ -25,6 +25,12 @@ void bytes_free(byte_string* bytes) {
   free(bytes);
 }
 
+void bytes_print(byte_string* bytes) {
+  for (size_t i = 0; i < bytes->size; i += 1) {
+    printf("%c", bytes->data[i]);
+  }
+}
+
 // ---
 
 byte_string* string_to_bytes (char* string) {
@@ -47,7 +53,15 @@ byte_string* hex_to_bytes (char* hex) {
 
   for (int i = 0; i < (int)strlen(hex); i += 2) {
     uint8_t byte = 0;
-    byte = (hex[i] << 4) + hex[i + 1];
+    uint8_t x = hex[i],
+            y = hex[i + 1];
+    if (x >= 'a' && x <= 'f') x = x - 'a' + 10;
+    else                      x = x - '0';
+
+    if (y >= 'a' && y <= 'f') y = y - 'a' + 10;
+    else                      y = y - '0';
+
+    byte = (x << 4) + y;
     bytes_append(bytes, byte);
   }
 
@@ -61,7 +75,10 @@ byte_string* hex_to_bytes (char* hex) {
 //       running the base64 string.
 byte_string* base64_to_bytes (char* base64) {
   int input_size  = strlen(base64);
-  if (input_size % 4 != 0) return NULL;
+  if (input_size % 4 != 0) {
+    printf("*** [ERROR] base64 %% 4 != 0 [FOUND] base64 %% 4 == %d ***\n", input_size % 4);
+    return NULL;
+  }
 
   int output_size = (input_size / 4) * 3;
   if (base64[input_size - 1] == '=') output_size -= 1;
@@ -81,17 +98,21 @@ byte_string* base64_to_bytes (char* base64) {
     uint8_t x = 0,
             y = 0,
             z = 0;
-    uint8_t a = base64_decoding_table[(int)base64[i++]], 
-            b = base64_decoding_table[(int)base64[i++]], 
-            c = base64_decoding_table[(int)base64[i++]], 
+    uint8_t a = base64_decoding_table[(int)base64[i++]],
+            b = base64_decoding_table[(int)base64[i++]],
+            c = base64_decoding_table[(int)base64[i++]],
             d = base64_decoding_table[(int)base64[i++]];
-    x = (a << 2) + ((0x30 & b) >> 4);
-    y = ((0x0f & b) << 4) + ((0x3c & c) >> 2);
-    z = ((0x03 & c) << 4) + d;
-    if (bytes->size < (size_t)output_size) bytes_append(bytes, x);
-    if (bytes->size < (size_t)output_size) bytes_append(bytes, y);
-    if (bytes->size < (size_t)output_size) bytes_append(bytes, z);
-  } 
+
+    x = (a << 2) | ((0x30 & b) >> 4);
+    y = ((0x0f & b) << 4) | ((0x3c & c) >> 2);
+    z = ((0x03 & c) << 6) | d;
+
+    bytes_append(bytes, x);
+    bytes_append(bytes, y);
+    bytes_append(bytes, z);
+
+    while (base64[i] == '\n') i += 1;
+  }
 
   return bytes;
 }
