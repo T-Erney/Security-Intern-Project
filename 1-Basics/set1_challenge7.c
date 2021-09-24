@@ -3,10 +3,6 @@
 #include <openssl/aes.h>
 
 #include "conversions.h"
-#include "xor.h"
-#include "memory_output.h"
-
-
 
 int main() {
 
@@ -42,6 +38,9 @@ int main() {
   }
 
   printf("%s\n", bytes_to_string(p_bytes));
-  
+
+  bytes_free(c_bytes);
+  bytes_free(k_bytes);
+  bytes_free(p_bytes);
   return 0;
 }
