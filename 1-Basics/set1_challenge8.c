@@ -6,16 +6,6 @@
 #include "xor.h"
 #include "memory_output.h"
 
-char* bytes_hash(byte_string* bytes) {
-  char* hash = malloc(sizeof(char) * bytes->size + 1);
-  hash[bytes->size] = 0;
-  size_t i = 0;
-  for (size_t j = 0; j < bytes->size; j += 1) {
-    hash[i] = bytes->data[j];
-  }
-  return hash;
-}
-
 int bytes_cmp(byte_string* x, byte_string* y) {
   for (size_t i = 0; i < x->size; i += 1) {
     if (x->data[i] < y->data[i]) return -1;
