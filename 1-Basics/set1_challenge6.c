@@ -2,10 +2,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "conversions.h"
-#include "xor.h"
-#include "memory_output.h"
-#include "hamming_dist.h"
+#include "../headers/conversions.h"
+#include "../headers/xor.h"
+#include "../headers/memory_output.h"
+#include "../headers/hamming_dist.h"
 
 static char letter_freq_order[] = {
                                    ' ', 'e', 't', 'a', 'o', 'i', 'n', 's', 'h', 

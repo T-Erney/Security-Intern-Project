@@ -1,5 +1,5 @@
-#include "conversions.h"
-#include "xor.h"
+#include "../headers/conversions.h"
+#include "../headers/xor.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -3,9 +3,9 @@
 #include <string.h>
 #include <openssl/aes.h>
 
-#include "conversions.h"
-#include "xor.h"
-#include "memory_output.h"
+#include "../headers/conversions.h"
+#include "../headers/xor.h"
+#include "../headers/memory_output.h"
 
 
 int bytes_cmp(byte_string** a, byte_string** b) {

@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "conversions.h"
-#include "xor.h"
-#include "memory_output.h"
+#include "../headers/conversions.h"
+#include "../headers/xor.h"
+#include "../headers/memory_output.h"
 
 int main() {
   char* key = "ICE";

@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
-#include "conversions.h"
-#include "xor.h"
+#include "../headers/conversions.h"
+#include "../headers/xor.h"
 
 // brought to you by our good friend Wikipedia
 // #spacesarecitizenstoo

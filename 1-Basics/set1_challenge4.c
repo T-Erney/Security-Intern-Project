@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
-#include "conversions.h"
-#include "xor.h"
+#include "../headers/conversions.h"
+#include "../headers/xor.h"
 
 // strcmp from string.h keeps segfaulting. 
 int strcmp(const char* c1, const char* c2) {

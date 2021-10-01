@@ -1,5 +1,5 @@
-#include "hamming_dist.h"
-#include "conversions.h"
+#include "../headers/hamming_dist.h"
+#include "../headers/conversions.h"
 
 int bit_masks[] = {
   0x80,
