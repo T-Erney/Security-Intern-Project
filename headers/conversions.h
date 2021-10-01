@@ -34,7 +34,7 @@ static int8_t base64_decoding_table[] = {
   49, 50, 51, -1, -1, -1, -1, -1
 
 };
-static char base64_padding = '=';
+// static char base64_padding = '=';
 static char hex_encoding[] = "0123456789abcdef";
 
 // conversion to bytes
