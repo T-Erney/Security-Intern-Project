@@ -13,6 +13,8 @@ byte_string*  bytes_init();
 void          bytes_append(byte_string*, unsigned char);
 void          bytes_free(byte_string*);
 void          bytes_print(byte_string*);
+byte_string*  bytes_clone(byte_string*);
+byte_string*  bytes_from(char*, size_t);
 
 static char base64_encoding_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static int8_t base64_decoding_table[] = {

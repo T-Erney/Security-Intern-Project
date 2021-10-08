@@ -1,20 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <openssl/aes>
+#include <string.h>
+#include <openssl/aes.h>
 
 #include "../headers/conversions.h"
 #include "../headers/xor.h"
 #include "../headers/mod.h"
+#include "../headers/memory_output.h"
+
+#define assert(cond) \
+  if (!(cond)) { \
+    printf("[assert filed] \'%s\' is false\n", #cond); \
+    exit(1); \
+  }
+
+byte_string* bytes_xor(byte_string* x_bytes, byte_string* y_bytes) {
+  if (x_bytes->size != y_bytes->size) return NULL;
+  byte_string* bytes = bytes_init(x_bytes->size);
+
+  for (size_t i = 0; i < x_bytes->size; i += 1) {
+    bytes_append(bytes, _xor(x_bytes->data[i], y_bytes->data[i]));
+  }
+
+  return bytes;
+}
 
 // pad bytes
-byte_string* pkcs7_pad_bytes(byte_string* bytes, size_t block_size) {
-  size_t pad_size = mod((block_size - m_bytes->size), block_size);
-  if (m_bytes->size == block_size) return bytes;
+byte_string* pkcs7_pad_bytes(byte_string* x_bytes, size_t block_size) {
+  size_t pad_size = mod((block_size - x_bytes->size), block_size);
+  if (x_bytes->size == block_size) return x_bytes;
 
-  byte_string* bytes = bytes_init(m_bytes->size + pad_size);
+  byte_string* bytes = bytes_init(x_bytes->size + pad_size);
 
-  for (int i = 0; i < m_bytes->size + pad_size + 1; i += 1) {
-    bytes_append(bytes, (i < m_bytes->size) ? m_bytes->data[i]: (unsigned char)pad_size);
+  for (int i = 0; i < x_bytes->size + pad_size + 1; i += 1) {
+    bytes_append(bytes, (i < x_bytes->size) ? x_bytes->data[i]: (unsigned char)pad_size);
   }
 
   return bytes;
@@ -35,28 +54,86 @@ byte_string* pkcs7_unpad_bytes(byte_string* bytes) {
   return new_bytes;
 }
 
+/*
+  NOTE(Tristan): block_size is probably not needed as the key is the same as the block_size?
+  p_bytes is padded inside of the aes_cbc_encrypt function
+*/
 byte_string* aes_ebc_encrypt(byte_string* p_bytes, byte_string* k_bytes, size_t block_size) {
   byte_string* c_bytes = bytes_init(p_bytes->size);
-  byte_string* padded_p_bytes = pkcs7_pad_bytes(p_bytes, block_size);
 
   AES_KEY k;
-  AES_set_encrypt_key(k_bytes->data, block_size * 8, %k);
-  AES_ecb_encrypt(padded_p_bytes->data, c_bytes->data, &k, AES_ENCRYPT);
-  c_bytes->size += block_size * 8;
+  AES_set_encrypt_key(k_bytes->data, block_size * 8, &k);
+  AES_ecb_encrypt(p_bytes->data, c_bytes->data, &k, AES_ENCRYPT);
+  c_bytes->size += block_size;
 
-  bytes_free(padded_p_bytes);
   return c_bytes;
 }
 
 byte_string* aes_ebc_decrypt(byte_string* c_bytes, byte_string* k_bytes, size_t block_size) {
   byte_string* p_bytes = bytes_init(c_bytes->size);
+
+  AES_KEY k;
+  AES_set_decrypt_key(k_bytes->data, block_size * 8, &k);
+  AES_ecb_encrypt(c_bytes->data, p_bytes->data, &k, AES_DECRYPT);
+  p_bytes->size += block_size;
+
+  return p_bytes;
+}
+
+byte_string* aes_cbc_encrypt(byte_string* p_bytes, byte_string* k_bytes, byte_string* iv_bytes, size_t block_size) {
+  byte_string* c_bytes = bytes_init(p_bytes);
+  byte_string* prev_iv_bytes = iv_bytes;
+
+  for (size_t i = 0; i < p_bytes->size; i += block_size) {
+    byte_string* tmp_p_bytes = bytes_from(p_bytes->data + i, block_size);
+    byte_string* plaintext_bytes = pkcs7_pad_bytes(tmp_p_bytes, block_size);
+    byte_string* xor_bytes = bytes_xor(plaintext_bytes, prev_iv_bytes);
+    byte_string* ebc_block_bytes = aes_ebc_encrypt(xor_bytes, k_bytes, block_size);
+
+    for (size_t j = 0; j < block_size; j += 1) bytes_append(c_bytes, ebc_block_bytes->data[j]);
+
+    if (prev_iv_bytes) bytes_free(prev_iv_bytes);
+    prev_iv_bytes = ebc_block_bytes;
+
+    bytes_free(tmp_p_bytes);
+    bytes_free(plaintext_bytes);
+    bytes_free(xor_bytes);
+  }
+
+  return c_bytes;
+}
+
+byte_string* aes_cbc_decrypt(byte_string* c_bytes, byte_string* k_bytes, byte_string* iv_bytes, size_t block_size) {
+  byte_string* p_bytes = bytes_init(c_bytes);
+  byte_string* prev_iv_bytes = iv_bytes;
+
+  for (size_t i = 0; i < c_bytes->size; i += block_size) {
+    byte_string* tmp_c_bytes = bytes_init(block_size);
+    memcpy(tmp_c_bytes->data, c_bytes->data + i, block_size);
+    tmp_c_bytes->size = block_size;
+
+    byte_string* ebc_block_decrypt = aes_ebc_decrypt(tmp_c_bytes, k_bytes, block_size);
+    byte_string* xor_bytes = bytes_xor(prev_iv_bytes, ebc_block_decrypt);
+
+    for (size_t j = 0; j < block_size; j += 1) bytes_append(p_bytes, xor_bytes->data[j]);
+
+    if (prev_iv_bytes) bytes_free(prev_iv_bytes);
+    prev_iv_bytes = ebc_block_decrypt;
+
+    bytes_free(xor_bytes);
+    bytes_free(tmp_c_bytes);
+  }
+
+  byte_string* padded_p_bytes = pkcs7_unpad_bytes(p_bytes);
+  bytes_free(p_bytes);
+  return padded_p_bytes;
 }
 
 int main() {
 
   char* buffer = NULL;
   {
-    FILE* file = fopen("res/10.txt");
+    FILE* file = fopen("res/10.txt", "r");
 
     fseek(file, 0, SEEK_END);
     size_t size = ftell(file);
@@ -69,9 +146,9 @@ int main() {
     fclose(file);
   }
 
-  byte_string* p_bytes = base64_to_bytes(buffer);
+  byte_string* c_bytes = base64_to_bytes(buffer);
   byte_string* k_bytes = string_to_bytes("YELLOW SUBMARINE");
-  size_t block_size    = k_bytes->size;
+  size_t block_size    = 16;
 
   // set iv to 0 bytes of size block_size
   byte_string* iv_bytes = bytes_init(block_size);
@@ -79,7 +156,8 @@ int main() {
     bytes_append(iv_bytes, (unsigned char)0);
   }
 
-  
+  byte_string* p_bytes = aes_cbc_decrypt(c_bytes, k_bytes, iv_bytes, block_size);
+  mem_output(p_bytes);
 
   free(buffer);
   return 0;

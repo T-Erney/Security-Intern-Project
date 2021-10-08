@@ -1,4 +1,5 @@
 #include "../headers/conversions.h"
+#include "../headers/assert.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -12,11 +13,13 @@ byte_string* bytes_init (size_t size) {
 }
 
 void bytes_append(byte_string* bytes, unsigned char byte) {
-  // This is a bad idea!!!
-  // bytes->data = realloc(bytes->data, sizeof(unsigned char) * bytes->size + 1);
   if (bytes->capacity == bytes->size) {
     bytes->data = realloc(bytes->data, sizeof(unsigned char) * bytes->capacity * 2);
+    bytes->capacity *= 2;
   }
+
+  assert(bytes->size > bytes->capacity); // if not, this means bad stuff!
+
   bytes->data[bytes->size] = byte;
   bytes->size += 1;
 }
@@ -29,6 +32,18 @@ void bytes_print(byte_string* bytes) {
   for (size_t i = 0; i < bytes->size; i += 1) {
     printf("%c", bytes->data[i]);
   }
+}
+
+byte_string* bytes_clone(byte_string* bytes) {
+  byte_string* new_bytes = bytes_init(bytes->size);
+  for (size_t i = 0; i < bytes->size; i += 1) bytes_append(new_bytes, bytes->data[i]);
+  return new_bytes;
+}
+
+byte_string* bytes_from(char* str, size_t size) {
+  byte_string* bytes = bytes_init(size);
+  for (size_t i = 0; i < size; i += 1) bytes_append(bytes, str[i]);
+  return bytes;
 }
 
 // ---
