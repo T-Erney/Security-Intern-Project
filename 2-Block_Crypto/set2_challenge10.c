@@ -7,12 +7,7 @@
 #include "../headers/xor.h"
 #include "../headers/mod.h"
 #include "../headers/memory_output.h"
-
-#define assert(cond) \
-  if (!(cond)) { \
-    printf("[assert filed] \'%s\' is false\n", #cond); \
-    exit(1); \
-  }
+#include "../headers/assert.h"
 
 byte_string* bytes_xor(byte_string* x_bytes, byte_string* y_bytes) {
   if (x_bytes->size != y_bytes->size) return NULL;
@@ -104,7 +99,11 @@ byte_string* aes_cbc_encrypt(byte_string* p_bytes, byte_string* k_bytes, byte_st
 }
 
 byte_string* aes_cbc_decrypt(byte_string* c_bytes, byte_string* k_bytes, byte_string* iv_bytes, size_t block_size) {
-  byte_string* p_bytes = bytes_init(c_bytes);
+  assert(c_bytes != NULL && c_bytes->size > 0);
+
+  byte_string* p_bytes = bytes_init(c_bytes->size);
+  assert(p_bytes->capacity > 0);
+
   byte_string* prev_iv_bytes = iv_bytes;
 
   for (size_t i = 0; i < c_bytes->size; i += block_size) {
@@ -117,16 +116,16 @@ byte_string* aes_cbc_decrypt(byte_string* c_bytes, byte_string* k_bytes, byte_st
 
     for (size_t j = 0; j < block_size; j += 1) bytes_append(p_bytes, xor_bytes->data[j]);
 
-    if (prev_iv_bytes) bytes_free(prev_iv_bytes);
+    if (prev_iv_bytes != iv_bytes) bytes_free(prev_iv_bytes);
     prev_iv_bytes = ebc_block_decrypt;
 
     bytes_free(xor_bytes);
     bytes_free(tmp_c_bytes);
   }
 
-  byte_string* padded_p_bytes = pkcs7_unpad_bytes(p_bytes);
+  byte_string* unpadded_p_bytes = pkcs7_unpad_bytes(p_bytes);
   bytes_free(p_bytes);
-  return padded_p_bytes;
+  return unpadded_p_bytes;
 }
 
 int main() {
