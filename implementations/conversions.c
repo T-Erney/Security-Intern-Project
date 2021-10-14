@@ -13,12 +13,12 @@ byte_string* bytes_init (size_t size) {
 }
 
 void bytes_append(byte_string* bytes, unsigned char byte) {
+  assert(bytes->capacity > 0);
+
   if (bytes->capacity == bytes->size) {
     bytes->data = realloc(bytes->data, sizeof(unsigned char) * bytes->capacity * 2);
     bytes->capacity *= 2;
   }
-
-  assert(bytes->size > bytes->capacity); // if not, this means bad stuff!
 
   bytes->data[bytes->size] = byte;
   bytes->size += 1;
