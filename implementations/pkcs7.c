@@ -1,5 +1,6 @@
 #include "../headers/pkcs7.h"
 #include "../headers/assert.h"
+#include "../headers/mod.h"
 
 byte_string* pkcs7_pad_bytes(byte_string* x_bytes, size_t block_size) {
   size_t pad_size = mod((block_size - x_bytes->size), block_size);

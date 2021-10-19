@@ -1,6 +1,9 @@
 #include "../headers/aes.h"
 #include "../headers/pkcs7.h"
 
+#include <stdio.h>
+#include <openssl/aes.h>
+
 byte_string* aes_ebc_encrypt(byte_string* p_bytes, byte_string* k_bytes, size_t block_size) {
   byte_string* c_bytes = bytes_init(p_bytes->size);
   byte_string* padded_p_bytes = pkcs7_pad_bytes(p_bytes, block_size);

@@ -1,4 +1,5 @@
 #include "../headers/conversions.h"
+#include "../headers/assert.h"
 
 unsigned char _xor (unsigned char c1, unsigned char c2) {
   return c1 ^ c2;
@@ -39,4 +40,13 @@ char* _xor_repeated(char* plaintext, char* key) {
   return hex;
 }
 
+byte_string* bytes_xor(byte_string* x_bytes, byte_string* y_bytes) {
+  assert(x_bytes->size == y_bytes->size);
+  byte_string* bytes = bytes_init(x_bytes->size);
 
+  for (size_t i = 0; i < x_bytes->size; i += 1) {
+    bytes_append(bytes, _xor(x_bytes->data[i], y_bytes->data[i]));
+  }
+
+  return bytes;
+}

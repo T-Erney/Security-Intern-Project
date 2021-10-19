@@ -15,6 +15,7 @@ void          bytes_free(byte_string*);
 void          bytes_print(byte_string*);
 byte_string*  bytes_clone(byte_string*);
 byte_string*  bytes_from(char*, size_t);
+int           bytes_cmp(byte_string*, byte_string*);
 
 static char base64_encoding_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static int8_t base64_decoding_table[] = {

@@ -1,6 +1,8 @@
 #ifndef ASSERT
 #define ASSERT
 
+#include <stdio.h>
+
 #define assert(cond)                                    \
   if (!(cond)) {                                        \
     printf("[assert failed] \'%s\' is false\n", #cond); \
