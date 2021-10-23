@@ -76,3 +76,35 @@ byte_string* aes_cbc_decrypt(byte_string* c_bytes, byte_string* k_bytes, byte_st
   bytes_free(prev_iv_bytes);
   return unpadded_p_bytes;
 }
+
+
+size_t aes_ecb_detect(byte_string* bytes, size_t block_size) {
+  size_t rep = 0;
+
+  size_t chunk_count = bytes->size / block_size;
+  byte_string** chunks = malloc(sizeof(byte_string*) * chunk_count);
+
+  for (size_t i = 0, j = 0; i < chunk_count; i += 1) chunks[j++] = bytes_from((char*)bytes->data + (i * block_size), block_size);
+
+  qsort(chunks, chunk_count, sizeof(byte_string*),
+        ({ int comp (const void* a, const void* b) {
+            byte_string ** x = (byte_string**)a,
+                        ** y = (byte_string**)b;
+            for (size_t i = 0; i < x[0]->size; i += 1) {
+              if (x[0]->data[i] < y[0]->data[i]) return -1;
+              if (x[0]->data[i] > y[0]->data[i]) return 1;
+            }
+            return 0;
+          } comp; }));
+
+  for (size_t i = 0; i < chunk_count - 1; i += 1) {
+    if (bytes_cmp(chunks[i], chunks[i + 1]) == 0) rep += 1;
+  }
+
+  for (size_t i = 0; i < chunk_count; i += 1) {
+    bytes_free(chunks[i]);
+  }
+  free(chunks);
+
+  return rep;
+}

@@ -31,7 +31,7 @@ size_t repeated_blocks(byte_string* c_bytes, size_t block_size) {
   qsort(chunks, chunk_count, sizeof(byte_string*),
        ({int comp(const void* a, const void* b) {
            byte_string ** x = (byte_string**)a, ** y = (byte_string**)b;
-           for (size_t i = 0; i < (*x)->size; i += 1) {
+           for (size_t i = 0; i < x[0]->size; i += 1) {
              if (x[0]->data[i] < y[0]->data[i]) return -1;
              if (x[0]->data[i] > y[0]->data[i]) return 1;
            }
@@ -109,7 +109,7 @@ int main() {
   byte_string* k_bytes = gen_rand(16);
   byte_string* p_bytes = string_to_bytes(buffer);
   byte_string* c_bytes = aes_encrypt_oracle(p_bytes, k_bytes, 16);
-  uint8_t      is_ecb  = repeated_blocks(c_bytes, 16);
+  uint8_t      is_ecb  = aes_ecb_detect(c_bytes, 16);
 
   printf("k_bytes := \n");
   mem_output(k_bytes);
