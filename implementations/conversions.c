@@ -46,6 +46,13 @@ byte_string* bytes_from(char* str, size_t size) {
   return bytes;
 }
 
+int bytes_cmp(byte_string* x_bytes, byte_string* y_bytes) {
+  for (size_t i = 0; i < x_bytes->size; i += 1) {
+    if (x_bytes->data[i] < y_bytes->data[i]) return -1;
+    if (x_bytes->data[i] > y_bytes->data[i]) return 1;
+  }
+  return 0;
+}
 // ---
 
 byte_string* string_to_bytes (char* string) {

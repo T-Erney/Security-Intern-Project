@@ -8,7 +8,7 @@
 #include "../headers/memory_output.h"
 
 
-int bytes_cmp(byte_string** a, byte_string** b) {
+int _cmp(byte_string** a, byte_string** b) {
   byte_string* x = a[0];
   byte_string* y = b[0];
   for (size_t i = 0; i < x->size; i += 1) {
@@ -19,7 +19,7 @@ int bytes_cmp(byte_string** a, byte_string** b) {
 }
 
 int cmp_func(const void* a, const void* b) {
-  return bytes_cmp((byte_string**)a, (byte_string**)b);
+  return _cmp((byte_string**)a, (byte_string**)b);
 }
 
 int main() {
