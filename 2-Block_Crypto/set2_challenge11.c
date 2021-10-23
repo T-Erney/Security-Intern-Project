@@ -19,41 +19,6 @@ byte_string* gen_rand(size_t size) {
   return k;
 }
 
-size_t repeated_blocks(byte_string* c_bytes, size_t block_size) {
-  size_t chunk_count = c_bytes->size / block_size;
-  byte_string** chunks = malloc(sizeof(byte_string*) * chunk_count);
-
-  for (size_t i = 0, j = 0; i < chunk_count; i += 1) {
-    chunks[j] = bytes_from((char*)c_bytes->data + (i * block_size), block_size);
-    j += 1;
-  }
-
-  qsort(chunks, chunk_count, sizeof(byte_string*),
-       ({int comp(const void* a, const void* b) {
-           byte_string ** x = (byte_string**)a, ** y = (byte_string**)b;
-           for (size_t i = 0; i < x[0]->size; i += 1) {
-             if (x[0]->data[i] < y[0]->data[i]) return -1;
-             if (x[0]->data[i] > y[0]->data[i]) return 1;
-           }
-           return 0;
-        } comp; }));
-
-  size_t rep = 0;
-  for (size_t i = 0; i < chunk_count - 1; i += 1) {
-    assert(chunks[i]);
-    assert(chunks[i + 1]);
-    if (bytes_cmp(chunks[i], chunks[i + 1]) == 0) {
-      rep += 1;
-    }
-  }
-
-  for (size_t i = 0; i < chunk_count; i += 1) {
-    bytes_free(chunks[i]);
-  }
-  free(chunks);
-  return rep;
-}
-
 byte_string* aes_encrypt_oracle(byte_string* p_bytes, byte_string* k_bytes, size_t block_size) {
   // get count of repeated blocks. If there are > 0 repeated blocks, we can assume ebc, else we assume cbc
   byte_string* bytes = NULL;
