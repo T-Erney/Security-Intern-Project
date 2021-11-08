@@ -11,7 +11,7 @@
 
 #define assertm(cond, msg)                                       \
   if (!(cond)) {                                                 \
-    printf("%s:%d: [assert failed] \'%s\' is false :: %s", __FILE__, __LINE__, #cond, msg); \
+    printf("%s:%d: [assert failed] \'%s\' is false :: %s\n", __FILE__, __LINE__, #cond, msg); \
     exit(1);                                                     \
   }
 
