@@ -5,6 +5,7 @@
 
 byte_string* bytes_init (size_t size) {
   byte_string* bytes = malloc(sizeof(byte_string));
+  assert(bytes != NULL);
   *bytes = (byte_string) {
     .size = 0,
     .capacity = size,
@@ -40,7 +41,7 @@ byte_string* bytes_clone(byte_string* bytes) {
   return new_bytes;
 }
 
-byte_string* bytes_from(char* str, size_t size) {
+byte_string* bytes_from(const char* str, size_t size) {
   byte_string* bytes = bytes_init(size);
   for (size_t i = 0; i < size; i += 1) bytes_append(bytes, str[i]);
   return bytes;
@@ -53,6 +54,14 @@ int bytes_cmp(byte_string* x_bytes, byte_string* y_bytes) {
   }
   return 0;
 }
+
+void bytes_resize(byte_string* bytes) {
+  size_t size = strlen((char*)bytes->data);
+  bytes->data = realloc(bytes->data, size);
+  bytes->capacity = size;
+  bytes->size = size;
+}
+
 // ---
 
 byte_string* string_to_bytes (char* string) {
