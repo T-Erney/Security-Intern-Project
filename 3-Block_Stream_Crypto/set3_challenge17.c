@@ -7,7 +7,9 @@
 #include "../headers/aes.h"
 #include "../headers/pkcs7.h"
 #include "../headers/memory_output.h"
+#include "../headers/pair.h"
 
+#define BLOCK_SIZE 16
 
 byte_string* gen_rand(size_t size) {
   byte_string* k = bytes_init(size);
@@ -21,11 +23,7 @@ byte_string* gen_rand(size_t size) {
   return k;
 }
 
-
-
-
-int main() {
-
+struct pair* get_secret(byte_string* key) {
   char* secrets[] = {
     "MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=",
     "MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=",
@@ -39,14 +37,40 @@ int main() {
     "MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93"
   };
 
-  byte_string* key    = gen_rand(16);
-  byte_string* iv     = gen_rand(16);
-  byte_string* secret = NULL;
-
-  // get a secret string and encrypt it
   srand(time(0));
-  secret = aes_cbc_encrypt(base64_to_bytes(secrets[rand() % 10]), key, iv, 16); // 10 random strings, so (mod 10)
+  byte_string* iv     = gen_rand(16);
+  byte_string* secret = pkcs7_pad_bytes(base64_to_bytes(secrets[rand() % 10]), BLOCK_SIZE);
+  secret              = aes_cbc_encrypt(secret, key, iv, BLOCK_SIZE);
+  struct pair* p_     = create_pair((void*)secret, (void*)iv);
+  return p_;
+}
 
+int oracle(byte_string* ciphertext, byte_string* iv, byte_string* key) {
+  byte_string* plaintext = aes_cbc_decrypt(ciphertext, key, iv, BLOCK_SIZE);
+  mem_output(plaintext);
+  return pkcs7_pad_validator(plaintext);
+}
 
+int main() {
+
+  byte_string* iv,
+             * secret,
+             * key = gen_rand(16);
+
+  // get iv and our ciphertext from get_secret
+  struct pair* p_ = get_secret(key);
+  secret = p_->a;
+  iv = p_->b;
+
+  if (oracle(secret, iv, key)) {
+    printf("secret decrypted is valid!\n");
+  } else {
+    printf("secret decrypted doesn't have valid padding\n");
+  }
+
+  free(p_);
+  bytes_free(key);
+  bytes_free(iv);
+  bytes_free(secret);
   return 0;
 }

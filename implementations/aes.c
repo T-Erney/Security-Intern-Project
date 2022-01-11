@@ -46,9 +46,9 @@ byte_string* aes_cbc_encrypt(byte_string* p_bytes, byte_string* k_bytes, byte_st
     if (prev_iv_bytes) bytes_free(prev_iv_bytes);
     prev_iv_bytes = bytes_clone(ebc_block_bytes);
     bytes_free(tmp_p_bytes);
-    bytes_free(xor_bytes);
+    // bytes_free(xor_bytes);
     bytes_free(ebc_block_bytes);
-    bytes_free(plaintext_bytes);
+    // bytes_free(plaintext_bytes);
   }
 
   bytes_free(prev_iv_bytes);

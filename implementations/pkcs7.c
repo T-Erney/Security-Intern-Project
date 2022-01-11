@@ -8,7 +8,7 @@ byte_string* pkcs7_pad_bytes(byte_string* x_bytes, size_t block_size) {
 
   byte_string* bytes = bytes_init(x_bytes->size + pad_size);
 
-  for (int i = 0; i < x_bytes->size + pad_size; i += 1) {
+  for (size_t i = 0; i < x_bytes->size + pad_size; i += 1) {
     bytes_append(bytes, (i < x_bytes->size) ? x_bytes->data[i]: (unsigned char)pad_size);
   }
 
