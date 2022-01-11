@@ -39,8 +39,7 @@ struct pair* get_secret(byte_string* key) {
 
   srand(time(0));
   byte_string* iv     = gen_rand(16);
-  byte_string* secret = pkcs7_pad_bytes(base64_to_bytes(secrets[rand() % 10]), BLOCK_SIZE);
-  secret              = aes_cbc_encrypt(secret, key, iv, BLOCK_SIZE);
+  byte_string* secret = aes_cbc_encrypt(pkcs7_pad_bytes(base64_to_bytes(secrets[rand() % 10]), BLOCK_SIZE), key, iv, BLOCK_SIZE);
   struct pair* p_     = create_pair((void*)secret, (void*)iv);
   return p_;
 }
