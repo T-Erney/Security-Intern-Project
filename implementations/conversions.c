@@ -26,6 +26,7 @@ void bytes_append(byte_string* bytes, unsigned char byte) {
 }
 
 void bytes_free(byte_string* bytes) {
+  free(bytes->data);
   free(bytes);
 }
 
@@ -56,10 +57,8 @@ int bytes_cmp(byte_string* x_bytes, byte_string* y_bytes) {
 }
 
 void bytes_resize(byte_string* bytes) {
-  size_t size = strlen((char*)bytes->data);
-  bytes->data = realloc(bytes->data, size);
-  bytes->capacity = size;
-  bytes->size = size;
+  bytes->data = realloc(bytes->data, bytes->size);
+  bytes->capacity = bytes->size;
 }
 
 // ---

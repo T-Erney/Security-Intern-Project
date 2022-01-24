@@ -1,11 +1,11 @@
 #ifndef PAIR_H
 #define PAIR_H
 
-struct pair {
+typedef struct pair_t {
   void* a;
   void* b;
-};
+} pair;
 
-struct pair* create_pair(void*, void*);
+pair* create_pair(void*, void*);
 
 #endif // PAIR_H

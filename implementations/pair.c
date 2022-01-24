@@ -2,8 +2,8 @@
 
 #include <stdlib.h>
 
-struct pair* create_pair(void* a, void* b) {
-  struct pair* p_ = malloc(sizeof(struct pair));
-  *p_ = (struct pair) { a, b };
+pair* create_pair(void* a, void* b) {
+  pair* p_ = malloc(sizeof(pair));
+  *p_ = (pair) { a, b };
   return p_;
 }
