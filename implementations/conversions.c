@@ -61,6 +61,32 @@ void bytes_resize(byte_string* bytes) {
   bytes->capacity = bytes->size;
 }
 
+void bytes_prepend(byte_string* bytes, unsigned char byte) {
+ assert(bytes->capacity > 0);
+
+  if (bytes->capacity == bytes->size) {
+    bytes->data = realloc(bytes->data, sizeof(unsigned char) * bytes->capacity * 2);
+    bytes->capacity *= 2;
+  }
+
+  for (size_t i = 0; i < bytes->size; i += 1) {
+    bytes->data[i + 1] = bytes->data[i];
+  }
+
+  bytes->data[0] = byte;
+  bytes->size += 1;
+}
+
+void bytes_pop_front(byte_string* bytes) {
+  if (bytes->size == 0) return;
+  for (size_t i = 0; i < bytes->size - 1; i += 1) {
+    bytes->data[i] = bytes->data[i + 1];
+    // fprintf(stderr, "\t\tbytes->size :: %ld, i :: %ld\n", bytes->size, i);
+  }
+  bytes->data[bytes->size - 1] = 0;
+  bytes->size -= 1;
+}
+
 // ---
 
 byte_string* string_to_bytes (char* string) {

@@ -4,7 +4,7 @@
 
 byte_string* pkcs7_pad_bytes(byte_string* x_bytes, size_t block_size) {
   size_t pad_size = mod((block_size - x_bytes->size), block_size);
-  if (x_bytes->size == block_size) return x_bytes;
+  if (x_bytes->size == block_size) return bytes_clone(x_bytes);
 
   byte_string* bytes = bytes_init(x_bytes->size + pad_size);
 
@@ -34,7 +34,8 @@ byte_string* pkcs7_unpad_bytes(byte_string* bytes, size_t block_size) {
 
 // validate padding on byte_string
 int pkcs7_pad_validator(byte_string* bytes) {
-  size_t pad_size = bytes->data[bytes->size - 1];
+  size_t pad_size = (bytes->data[bytes->size - 1] <= 0xf) ? bytes->data[bytes->size - 1] : 0;
+  if (pad_size == 0 || pad_size > 0xf) return 0;
   size_t current_pad = 0;
 
   for (size_t i = bytes->size - 1; (int64_t)i >= 0; i -= 1) {

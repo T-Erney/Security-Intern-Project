@@ -1,5 +1,6 @@
 #include "../headers/aes.h"
 #include "../headers/pkcs7.h"
+#include "../headers/memory_output.h"
 
 #include <stdio.h>
 #include <openssl/aes.h>
@@ -111,4 +112,33 @@ size_t aes_ecb_detect(byte_string* bytes, size_t block_size) {
   free(chunks);
 
   return rep;
+}
+
+
+byte_string* aes_ctr_mode(byte_string* bytes, byte_string* k_bytes, size_t nonce) {
+  byte_string* o_bytes = bytes_init(bytes->size);
+
+  size_t counter = 0;
+  while (bytes->data[counter * 16]) {
+    byte_string* data_bytes = bytes_from((const char*)bytes->data + (counter * 16), 16);
+    byte_string* iv_bytes = bytes_init(16);
+    char* nonce_str = (char*)&nonce; // because of the computers arch, this is little endian
+    char* count_str = (char*)&counter; // because of the computers arch, this is little endian
+    for (size_t i = 0; i < 8; i += 1) bytes_append(iv_bytes, nonce_str[i]);
+    for (size_t i = 0; i < 8; i += 1) bytes_append(iv_bytes, count_str[i]);
+
+    byte_string* enc_bytes = aes_ecb_encrypt(iv_bytes, k_bytes, AES_BLOCK_SIZE);
+    byte_string* p_bytes   = bytes_xor(enc_bytes, data_bytes);
+
+    for (size_t i = 0; i < 16; i += 1) if (o_bytes->size < o_bytes->capacity) bytes_append(o_bytes, p_bytes->data[i]);
+
+    bytes_free(data_bytes);
+    bytes_free(iv_bytes);
+    bytes_free(enc_bytes);
+    bytes_free(p_bytes);
+
+    counter += 1;
+  }
+
+  return o_bytes;
 }
