@@ -17,6 +17,8 @@ byte_string*  bytes_clone(byte_string*);
 byte_string*  bytes_from(const char*, size_t);
 int           bytes_cmp(byte_string*, byte_string*);
 void          bytes_resize(byte_string*);
+void          bytes_prepend(byte_string*, unsigned char);
+void          bytes_pop_front(byte_string*);
 
 static char base64_encoding_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static int8_t base64_decoding_table[] = {
