@@ -40,6 +40,24 @@ char* _xor_repeated(char* plaintext, char* key) {
   return hex;
 }
 
+byte_string* _xor_repeated_bytes(byte_string* bytes, byte_string* k_bytes) {
+  byte_string* p_bytes = bytes_init(bytes->size);
+  for (size_t i = 0; i < bytes->size; i += 1) {
+    bytes_append(p_bytes, _xor(bytes->data[i], k_bytes->data[i % k_bytes->size]));
+  }
+  return p_bytes;
+}
+
+byte_string* single_xor(byte_string* bytes, unsigned char byte) {
+  byte_string* ret_bytes = bytes_init(bytes->size);
+
+  for (size_t i = 0; i < bytes->size; i += 1) {
+    bytes_append(ret_bytes, _xor(bytes->data[i], byte));
+  }
+
+  return ret_bytes;
+}
+
 byte_string* bytes_xor(byte_string* x_bytes, byte_string* y_bytes) {
   assert(x_bytes->size == y_bytes->size);
   byte_string* bytes = bytes_init(x_bytes->size);

@@ -61,6 +61,15 @@ void bytes_resize(byte_string* bytes) {
   bytes->capacity = bytes->size;
 }
 
+// find the first non-zero byte from the back and resize to that byte
+void bytes_truncate(byte_string* bytes) {
+  size_t i = bytes->size;
+  while (bytes->data[i - 1] == 0) i -= 1;
+  bytes->data = realloc(bytes->data, i);
+  bytes->size = i;
+  bytes->capacity = i;
+}
+
 void bytes_prepend(byte_string* bytes, unsigned char byte) {
  assert(bytes->capacity > 0);
 
@@ -154,10 +163,10 @@ byte_string* base64_to_bytes (char* base64) {
     uint8_t x = 0,
             y = 0,
             z = 0;
-    uint8_t a = base64_decoding_table[(int)base64[i++]],
-            b = base64_decoding_table[(int)base64[i++]],
-            c = base64_decoding_table[(int)base64[i++]],
-            d = base64_decoding_table[(int)base64[i++]];
+    uint8_t a = base64[i] == '=' ? 0 & i++ : base64_decoding_table[(int)base64[i++]],
+            b = base64[i] == '=' ? 0 & i++ : base64_decoding_table[(int)base64[i++]],
+            c = base64[i] == '=' ? 0 & i++ : base64_decoding_table[(int)base64[i++]],
+            d = base64[i] == '=' ? 0 & i++ : base64_decoding_table[(int)base64[i++]];
 
     x = (a << 2) | ((0x30 & b) >> 4);
     y = ((0x0f & b) << 4) | ((0x3c & c) >> 2);
@@ -170,6 +179,7 @@ byte_string* base64_to_bytes (char* base64) {
     while (base64[i] == '\n') i += 1;
   }
 
+  bytes_truncate(bytes);
   return bytes;
 }
 
