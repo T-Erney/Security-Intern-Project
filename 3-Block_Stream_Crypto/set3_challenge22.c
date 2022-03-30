@@ -15,14 +15,14 @@ unsigned int crack_mt19937() {
     unsigned int delta2 = (rand() % 960) + 40;
 
     printf("origin seed :: %d\n", seed);
-    mt_seed(seed);
-    unsigned int prng = mt_extract_number();
+    mt19937 mt = mt_seed(seed);
+    unsigned int prng = mt_extract_number(&mt);
     unsigned int output_time = now + delta + delta2;
 
     for (int i = 40; i < 1000; i += 1) {
         seed = output_time - i;
-        mt_seed(seed);
-        unsigned int prng_test = mt_extract_number();
+        mt = mt_seed(seed);
+        unsigned int prng_test = mt_extract_number(&mt);
         if (prng == prng_test) {
             break;
         }
